@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [token, setToken] = useState('');
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const [tab, setTab] = useState('overview');
   const load = useCallback(async value => {
     if (!value) return;
     const response = await fetch('/api/snapshot', { headers: { Authorization: `Bearer ${value}` }, cache: 'no-store' });
@@ -27,13 +28,31 @@ export default function Dashboard() {
   const stale = Date.now() - (data.receivedAt || data.fetchedAt) > 20 * 60_000;
   const hardware = data.hardware || {};
   const sessions = data.platforms.flatMap(platform => (platform.activeSessionList || []).map(session => ({ ...session, platform: platform.label, platformId: platform.id }))).sort((a,b) => b.updatedAt - a.updatedAt).slice(0, 8);
-  return <main className="shell">
+  return <main className="shell tabbed">
     <header><div><span className={`pulse ${stale ? 'stale' : ''}`}></span><b>Token Pulse</b></div><span>{stale ? 'STALE' : 'LIVE'}</span></header>
-    <section className="hero"><small>TOKENS TODAY</small><strong>{compact(data.total)}</strong><p>{data.sessions} sessions across {data.platforms.filter(item => item.connected).length} runtimes · synced {ago(data.receivedAt || data.fetchedAt)}</p></section>
-    <section className="split"><article><small>FRESH INPUT</small><strong>{compact(data.input)}</strong></article><article><small>CACHE READ</small><strong>{compact(data.cacheRead)}</strong></article><article><small>OUTPUT</small><strong>{compact(data.output)}</strong></article></section>
-    <section className="platforms">{data.platforms.map(platform => <article key={platform.id}><div><i className={platform.id}></i><b>{platform.label}</b><em>{platform.active} active</em></div><strong>{compact(platform.total)}</strong><span>{platform.quota?.available ? `${Math.round(platform.quota.remainingPercent)}% quota left` : `${platform.sessions} sessions`}</span></article>)}</section>
-    <section className="readiness"><div><small>AGENT READINESS</small><b>{hardware.recommendation?.mode || 'UNKNOWN'}</b></div><div><strong>{hardware.recommendation?.model || 'Waiting for scan'}</strong><span>{hardware.cpu?.utilization || 0}% CPU · {hardware.memory?.utilization || 0}% RAM · {hardware.gpu?.vramGb || 0} GB VRAM</span></div></section>
-    <section className="sessions"><div className="section-title"><b>Active sessions</b><span>Last 20 minutes</span></div>{sessions.map(session => <article key={`${session.platformId}-${session.id}`}><i className={session.platformId}></i><div><strong>{session.title || 'Untitled session'}</strong><span>{session.platform} · {ago(session.updatedAt)}</span></div><em>{compact(session.total)}</em></article>)}</section>
-    <footer><button onClick={() => load(token)}>Refresh now</button><button className="ghost" onClick={() => { localStorage.removeItem('token-pulse-access'); setData(null); setToken(''); }}>Lock</button></footer>
+    {tab === 'overview' && <div className="tab-page">
+      <section className="hero"><small>TOKENS TODAY</small><strong>{compact(data.total)}</strong><p>{data.sessions} sessions across {data.platforms.filter(item => item.connected).length} runtimes · synced {ago(data.receivedAt || data.fetchedAt)}</p></section>
+      <section className="split"><article><small>FRESH INPUT</small><strong>{compact(data.input)}</strong></article><article><small>CACHE READ</small><strong>{compact(data.cacheRead)}</strong></article><article><small>OUTPUT</small><strong>{compact(data.output)}</strong></article></section>
+      <section className="platforms">{data.platforms.map(platform => <article key={platform.id}><div><i className={platform.id}></i><b>{platform.label}</b><em>{platform.active} active</em></div><strong>{compact(platform.total)}</strong><span>{platform.quota?.available ? `${Math.round(platform.quota.remainingPercent)}% quota left` : `${platform.sessions} sessions`}</span></article>)}</section>
+    </div>}
+    {tab === 'sessions' && <div className="tab-page sessions-page"><section className="sessions"><div className="section-title"><div><small>LIVE WORK</small><b>Active sessions</b></div><span>Last 20 minutes</span></div>{sessions.length ? sessions.map(session => <article key={`${session.platformId}-${session.id}`}><i className={session.platformId}></i><div><strong>{session.title || 'Untitled session'}</strong><span>{session.platform}{session.model ? ` · ${session.model}` : ''} · {ago(session.updatedAt)}</span></div><em>{compact(session.total)}</em></article>) : <p className="empty">No sessions are active right now.</p>}</section></div>}
+    {tab === 'system' && <div className="tab-page system-page">
+      <section className="system-hero"><small>AGENT READINESS</small><strong>{hardware.recommendation?.mode || 'UNKNOWN'}</strong><p>{hardware.recommendation?.route || 'Waiting for the desktop hardware scan.'}</p></section>
+      <section className="system-grid"><article><small>CPU LOAD</small><strong>{hardware.cpu?.utilization || 0}%</strong></article><article><small>MEMORY</small><strong>{hardware.memory?.utilization || 0}%</strong></article><article><small>GPU VRAM</small><strong>{hardware.gpu?.vramGb || 0} GB</strong></article></section>
+      <section className="model-fit"><small>BEST LOCAL FIT</small><strong>{hardware.recommendation?.model || 'Waiting for scan'}</strong><span>System pressure: {hardware.pressure || 'unknown'}</span></section>
+      <section className="quota-list"><div className="section-title"><b>Provider quotas</b><span>Account allowance</span></div>{data.platforms.map(platform => <article key={platform.id}><div><i className={platform.id}></i><b>{platform.label}</b></div><strong>{platform.quota?.available ? `${Math.round(platform.quota.remainingPercent)}% left` : 'Not exposed'}</strong></article>)}</section>
+      <footer><button onClick={() => load(token)}>Refresh now</button><button className="ghost" onClick={() => { localStorage.removeItem('token-pulse-access'); setData(null); setToken(''); }}>Lock</button></footer>
+    </div>}
+    <nav className="tabbar" aria-label="Dashboard sections">
+      <button className={tab === 'overview' ? 'selected' : ''} onClick={() => setTab('overview')}><TabIcon name="overview"/><span>Overview</span></button>
+      <button className={tab === 'sessions' ? 'selected' : ''} onClick={() => setTab('sessions')}><TabIcon name="sessions"/><span>Sessions</span><em>{data.activeSessions}</em></button>
+      <button className={tab === 'system' ? 'selected' : ''} onClick={() => setTab('system')}><TabIcon name="system"/><span>System</span></button>
+    </nav>
   </main>;
+}
+
+function TabIcon({ name }) {
+  if (name === 'overview') return <svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9Zm10 7h6v-9h-6v9ZM4 20h6v-3H4v3Zm10-13h6V4h-6v3Z"/></svg>;
+  if (name === 'sessions') return <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>;
+  return <svg viewBox="0 0 24 24"><path d="M4 15h3l2-7 4 11 2-6h5"/></svg>;
 }
