@@ -1,0 +1,9 @@
+{
+  "name": "Token Pulse Mobile",
+  "short_name": "Token Pulse",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080b0d",
+  "theme_color": "#101419",
+  "description": "Private mobile AI runtime and token monitoring"
+}
