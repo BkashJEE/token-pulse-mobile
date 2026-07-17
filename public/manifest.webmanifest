@@ -5,5 +5,8 @@
   "display": "standalone",
   "background_color": "#080b0d",
   "theme_color": "#101419",
-  "description": "Private mobile AI runtime and token monitoring"
+  "description": "Private mobile AI runtime and token monitoring",
+  "icons": [
+    { "src": "/icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any maskable" }
+  ]
 }
