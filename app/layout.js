@@ -1,4 +1,5 @@
 import './styles.css';
+import './alerts.css';
 
 export const metadata = {
   title: 'Token Pulse Mobile',
