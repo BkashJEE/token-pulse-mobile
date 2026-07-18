@@ -19,3 +19,4 @@ jobs:
           BLOB_READ_WRITE_TOKEN: vercel_blob_rw_dummy
           SYNC_TOKEN: test-sync-token
           DASHBOARD_TOKEN: test-dashboard-token
+          SESSION_SECRET: test-session-secret-with-at-least-32-characters

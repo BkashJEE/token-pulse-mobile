@@ -2,12 +2,20 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { handlePost } from '../app/api/ingest/route.js';
 import { handleGet } from '../app/api/snapshot/route.js';
+import { handlePost as handleLogin } from '../app/api/session/route.js';
+import { handlePost as handleLogout } from '../app/api/session/logout/route.js';
+import { SESSION_COOKIE } from '../lib/session.js';
 
 const snapshot = { schema: 1, fetchedAt: 1, period: 'Today', dateKey: '2026-07-17', total: 10, input: 8, output: 2, cacheRead: 0, cacheHitRate: 0, activeSessions: 0, sessions: 1, platforms: [] };
 const post = (body, token = 'sync') => new Request('https://example.test/api/ingest', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: typeof body === 'string' ? body : JSON.stringify(body) });
-const get = (token = 'dashboard') => new Request('https://example.test/api/snapshot', { headers: { authorization: `Bearer ${token}` } });
+const get = (cookie = '') => new Request('https://example.test/api/snapshot', { headers: cookie ? { cookie } : {} });
+const login = accessKey => new Request('https://example.test/api/session', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ accessKey }) });
 
-test.beforeEach(() => { process.env.SYNC_TOKEN = 'sync'; process.env.DASHBOARD_TOKEN = 'dashboard'; });
+test.beforeEach(() => {
+  process.env.SYNC_TOKEN = 'sync';
+  process.env.DASHBOARD_TOKEN = 'dashboard';
+  process.env.SESSION_SECRET = 'test-session-secret-with-at-least-32-characters';
+});
 
 test('unauthorized ingest does not parse or write attacker input', async () => {
   let writes = 0;
@@ -31,15 +39,42 @@ test('ingest converts storage failure into an explainable 503', async () => {
   assert.deepEqual(await response.json(), { error: 'Snapshot storage unavailable' });
 });
 
-test('snapshot route distinguishes unauthorized, empty, corrupt, and healthy storage', async () => {
-  assert.equal((await handleGet(get('wrong'), { read: async () => snapshot })).status, 401);
-  assert.equal((await handleGet(get(), { read: async () => null })).status, 404);
-  assert.equal((await handleGet(get(), { read: async () => { throw new Error('corrupt'); } })).status, 503);
-  const response = await handleGet(get(), { read: async () => snapshot });
+test('login exchanges the dashboard key for a protected cookie without echoing the key', async () => {
+  assert.equal((await handleLogin(login('wrong'))).status, 401);
+  const response = await handleLogin(login('dashboard'), { now: () => 1_700_000_000_000, deviceId: () => 'device-1' });
+  assert.equal(response.status, 204);
+  const cookie = response.headers.get('set-cookie');
+  assert.match(cookie, new RegExp(`^${SESSION_COOKIE}=`));
+  assert.match(cookie, /HttpOnly/);
+  assert.match(cookie, /Secure/);
+  assert.match(cookie, /SameSite=Strict/);
+  assert.equal(cookie.includes('dashboard'), false);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+});
+
+test('snapshot requires a device session while retaining the native bearer compatibility path', async () => {
+  const wrongBearer = new Request('https://example.test/api/snapshot', { headers: { authorization: 'Bearer wrong' } });
+  assert.equal((await handleGet(wrongBearer, { read: async () => snapshot })).status, 401);
+  const nativeBearer = new Request('https://example.test/api/snapshot', { headers: { authorization: 'Bearer dashboard' } });
+  assert.equal((await handleGet(nativeBearer, { read: async () => snapshot })).status, 200);
+
+  const loginResponse = await handleLogin(login('dashboard'));
+  const cookie = loginResponse.headers.get('set-cookie').split(';', 1)[0];
+  assert.equal((await handleGet(get(`${SESSION_COOKIE}=tampered`), { read: async () => snapshot })).status, 401);
+  assert.equal((await handleGet(get(cookie), { read: async () => null })).status, 404);
+  assert.equal((await handleGet(get(cookie), { read: async () => { throw new Error('corrupt'); } })).status, 503);
+  const response = await handleGet(get(cookie), { read: async () => snapshot });
   assert.equal(response.status, 200);
   assert.equal(response.headers.get('cache-control'), 'private, no-store');
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
   assert.deepEqual(await response.json(), snapshot);
+});
+
+test('logout expires the protected session cookie', async () => {
+  const response = await handleLogout();
+  assert.equal(response.status, 204);
+  assert.match(response.headers.get('set-cookie'), new RegExp(`^${SESSION_COOKIE}=;`));
+  assert.match(response.headers.get('set-cookie'), /Max-Age=0/);
 });
 
 test('parallel ingests keep request data isolated', async () => {

@@ -11,31 +11,62 @@ function Login({ onUnlock, error }) {
 }
 
 export default function Dashboard() {
-  const [token, setToken] = useState('');
+  const [sessionActive, setSessionActive] = useState(false);
+  const [logoutFailed, setLogoutFailed] = useState(false);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [tab, setTab] = useState('overview');
   const requestState = useRef({ sequence: 0, controller: null });
-  const load = useCallback(async value => {
-    if (!value) return;
+  const load = useCallback(async (silentUnauthorized = false) => {
     const sequence = ++requestState.current.sequence;
     requestState.current.controller?.abort();
     const controller = new AbortController();
     requestState.current.controller = controller;
     try {
-      const response = await fetch('/api/snapshot', { headers: { Authorization: `Bearer ${value}` }, cache: 'no-store', signal: controller.signal });
+      const response = await fetch('/api/snapshot', { cache: 'no-store', credentials: 'same-origin', signal: controller.signal });
       if (sequence !== requestState.current.sequence) return;
-      if (!response.ok) { setError(response.status === 401 ? 'That access key is not valid.' : response.status === 503 ? 'Snapshot storage is temporarily unavailable.' : 'Desktop snapshot is not available yet.'); return; }
+      if (!response.ok) {
+        if (response.status === 401) { setSessionActive(false); setData(null); setError(silentUnauthorized ? '' : 'Your private session expired. Open the dashboard again.'); }
+        else { setSessionActive(true); setError(response.status === 503 ? 'Snapshot storage is temporarily unavailable.' : 'Desktop snapshot is not available yet.'); }
+        return;
+      }
       const next = await response.json();
-      if (sequence === requestState.current.sequence) { setData(next); setError(''); }
+      if (sequence === requestState.current.sequence) { setSessionActive(true); setData(next); setError(''); }
     } catch (loadError) {
       if (loadError?.name !== 'AbortError' && sequence === requestState.current.sequence) setError('Token Pulse could not reach the server.');
     }
   }, []);
-  const unlock = value => { localStorage.setItem('token-pulse-access', value); setToken(value); load(value); };
-  useEffect(() => { const saved = localStorage.getItem('token-pulse-access') || ''; setToken(saved); load(saved); }, [load]);
-  useEffect(() => { if (!token) return; const timer = setInterval(() => load(token), 30_000); return () => { clearInterval(timer); requestState.current.controller?.abort(); }; }, [token, load]);
-  if (!data) return <Login onUnlock={unlock} error={error}/>;
+  const unlock = async accessKey => {
+    setError('');
+    try {
+      const response = await fetch('/api/session', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ accessKey }) });
+      if (!response.ok) { setError(response.status === 401 ? 'That access key is not valid.' : 'Private session setup is temporarily unavailable.'); return; }
+      setLogoutFailed(false);
+      setSessionActive(true);
+      await load();
+    } catch { setError('Token Pulse could not reach the server.'); }
+  };
+  const lock = async () => {
+    requestState.current.sequence++;
+    requestState.current.controller?.abort();
+    setData(null);
+    setSessionActive(false);
+    setLogoutFailed(false);
+    setError('');
+    try {
+      const response = await fetch('/api/session/logout', { method: 'POST', credentials: 'same-origin' });
+      if (!response.ok) throw new Error('Logout failed');
+    } catch {
+      setLogoutFailed(true);
+      setError('Dashboard hidden, but server logout could not be confirmed. Check your connection and retry.');
+    }
+  };
+  useEffect(() => { load(true); }, [load]);
+  useEffect(() => { if (!sessionActive) return; const timer = setInterval(() => load(), 30_000); return () => { clearInterval(timer); requestState.current.controller?.abort(); }; }, [sessionActive, load]);
+  if (logoutFailed) return <main className="login"><div className="mark">⌁</div><h1>Token Pulse</h1><p>{error}</p><button onClick={lock}>Retry lock</button></main>;
+  if (!data) return sessionActive
+    ? <main className="login"><div className="mark">⌁</div><h1>Token Pulse</h1><p>{error || 'Waiting for the first desktop snapshot.'}</p><button onClick={() => load()}>Try again</button><button className="ghost" onClick={lock}>Lock</button></main>
+    : <Login onUnlock={unlock} error={error}/>;
   const stale = Date.now() - (data.receivedAt || data.fetchedAt) > 20 * 60_000;
   const hardware = data.hardware || {};
   const sessions = data.platforms.flatMap(platform => (platform.activeSessionList || []).map(session => ({ ...session, platform: platform.label, platformId: platform.id }))).sort((a,b) => b.updatedAt - a.updatedAt).slice(0, 8);
@@ -54,7 +85,7 @@ export default function Dashboard() {
       <section className="system-grid"><article><small>CPU LOAD</small><strong>{hardware.cpu?.utilization || 0}%</strong></article><article><small>MEMORY</small><strong>{hardware.memory?.utilization || 0}%</strong></article><article><small>GPU VRAM</small><strong>{hardware.gpu?.vramGb || 0} GB</strong></article></section>
       <section className="model-fit"><small>BEST LOCAL FIT</small><strong>{hardware.recommendation?.model || 'Waiting for scan'}</strong><span>System pressure: {hardware.pressure || 'unknown'}</span></section>
       <section className="quota-list"><div className="section-title"><b>Provider quotas</b><span>Account allowance</span></div>{data.platforms.map(platform => <article key={platform.id}><div><i className={platform.id}></i><b>{platform.label}</b></div><strong>{platform.quota?.available ? `${Math.round(platform.quota.remainingPercent)}% left` : 'Not exposed'}</strong></article>)}</section>
-      <footer><button onClick={() => load(token)}>Refresh now</button><button className="ghost" onClick={() => { requestState.current.sequence++; requestState.current.controller?.abort(); localStorage.removeItem('token-pulse-access'); setData(null); setToken(''); }}>Lock</button></footer>
+      <footer><button onClick={() => load()}>Refresh now</button><button className="ghost" onClick={lock}>Lock</button></footer>
     </div>}
     <nav className="tabbar" aria-label="Dashboard sections">
       <button className={tab === 'overview' ? 'selected' : ''} onClick={() => setTab('overview')}><TabIcon name="overview"/><span>Overview</span></button>
