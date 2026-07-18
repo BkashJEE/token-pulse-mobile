@@ -1,8 +1,11 @@
 node_modules/
 .next/
+coverage/
 .vercel/
 .env*
 !.env.example
-
-.vercel
-.env*
+.npmrc
+*.pem
+*.key
+*.p12
+*.pfx
