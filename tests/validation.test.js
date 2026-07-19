@@ -49,3 +49,12 @@ test('normalizeSnapshot clamps boundary metrics and safely defaults missing opti
   assert.equal(result.platforms[0].total, 0);
   assert.equal(result.hardware, null);
 });
+
+test('normalizeSnapshot preserves allowlisted provenance without leaking source paths', () => {
+  const allowed = normalizeSnapshot({ ...valid(), platforms: [{ dataSource: 'JSONL', liveliness: { state: 'live', label: 'LIVE', ageMs: 200, secret: 'nope' }, activeSessionList: [] }] });
+  const rejected = normalizeSnapshot({ ...valid(), platforms: [{ dataSource: 'C:\\private\\sessions', liveliness: { state: 'invented', label: 'TOO-LONG-PRIVATE-STATE', ageMs: -1 }, activeSessionList: [] }] });
+  assert.equal(allowed.platforms[0].dataSource, 'JSONL');
+  assert.deepEqual(allowed.platforms[0].liveliness, { state: 'live', label: 'LIVE', ageMs: 200 });
+  assert.equal(rejected.platforms[0].dataSource, 'Unknown source');
+  assert.deepEqual(rejected.platforms[0].liveliness, { state: 'unknown', label: 'TOO-LONG-PRI', ageMs: 0 });
+});
