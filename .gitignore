@@ -18,3 +18,5 @@ oauth-credentials*.json
 x-analytics*.csv
 account_overview_analytics.csv
 account_analytics_content*.csv
+
+.vercel
