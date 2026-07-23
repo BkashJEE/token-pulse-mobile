@@ -1,0 +1,84 @@
+{
+  "title": "Operator Workbench · Token Pulse",
+  "body": "BKASH OS\nOperator Workbench\n PRIVATE\nLock\nWORK IN PROGRESS\nOutcome library\n\nNot prompts for browsing. Operating contracts for verified work.\n\nRUNTIME INTELLIGENCE\nToken Pulse\nPrivate telemetry ready\n↗\nEXPERIMENT SYSTEM\nGrowth Command\nVerified snapshot connected\n↗\nOUTCOME ORCHESTRATION\nOperator Workbench\nMVP · read-only\n↗\nREAD-ONLY MVP\nNo invisible execution.\n\nEvery consequential move stays behind Dad’s explicit approval.\n\nSIGNAL → RESULT\nChoose the outcome.\nKeep the proof.\n\nTurn verified signals into safe, repeatable outcomes.\n\n01\nSignal\n02\nPlaybook\n03\nEvidence\n04\nApproval\n05\nResult\nOPERATING PLAYBOOKS\nWhat needs to move?\n\n8 of 8 playbooks · MVP · read-only\n\n⌕\nAll\n8\nWork\n6\nPersonal\n2\nMO\nWORK\nDAILY · MANUAL IN MVP\nStart with one decision-ready brief\n\nConvert runtime pressure and growth priorities into one ranked move for today.\n\nT\nG\nH\n−\nTRIGGER\n\nFirst work session of the day or after a major context switch.\n\nPROOF OF DONE\n\nA one-page brief with source timestamps, one owner, one move, and one acceptance check.\n\nAPPROVAL BOUNDARY\n\nRequired only if the selected move sends, publishes, spends, deletes, or changes an external system.\n\nSUCCESS MEASURE\n\nDad can approve, reject, or redirect the move in under two minutes.\n\nCONNECTED SOURCES\nLatest privacy-redacted Token Pulse snapshot\nCurrent Growth Command experiment and source ledger\nOPERATING STEPS\nCheck data freshness before using any metric.\nSeparate observed facts from assumptions.\nRank one move by impact, confidence, and reversibility.\nName the proof that will close the loop.\nEXACT OPERATOR PROMPT\nManual execution · read-only MVP\nCopy prompt\n\nBuild today’s operator brief from the latest Token Pulse and Growth Command evidence. Separate observed facts, source claims, inference, and unknowns. Recommend exactly one highest-leverage reversible move. Include source freshness, owner, approval gate, and the real artifact or system check that proves completion. Do not send, publish, spend, delete, or change an external system w",
+  "playbookCards": 8,
+  "productCards": 0,
+  "categoryButtons": [
+    "All\n8",
+    "Work\n6",
+    "Personal\n2"
+  ],
+  "hasHorizontalOverflow": false,
+  "viewport": {
+    "width": 1440,
+    "height": 1200
+  },
+  "scrollHeight": 1904,
+  "scripts": [
+    "https://localhost:3443/_next/static/chunks/0a5r380pv61ei.js",
+    "https://localhost:3443/_next/static/chunks/05g-ulfrykrmm.js",
+    "https://localhost:3443/_next/static/chunks/turbopack-0mr2zkoev_t7i.js",
+    "https://localhost:3443/_next/static/chunks/1fpxxw4346w1w.js",
+    "https://localhost:3443/_next/static/chunks/0a_khl0kmq4fu.js",
+    "https://localhost:3443/_next/static/chunks/0cz1d0mv5g_q7.js",
+    "https://localhost:3443/_next/static/chunks/1jq4o6yq14o4c.js",
+    "inline",
+    "inline",
+    "inline",
+    "inline",
+    "inline",
+    "inline"
+  ],
+  "resources": [
+    {
+      "name": "https://localhost:3443/_next/static/chunks/turbopack-0mr2zkoev_t7i.js",
+      "type": "script",
+      "bytes": 4434
+    },
+    {
+      "name": "https://localhost:3443/_next/static/chunks/0a5r380pv61ei.js",
+      "type": "script",
+      "bytes": 50777
+    },
+    {
+      "name": "https://localhost:3443/_next/static/chunks/05g-ulfrykrmm.js",
+      "type": "script",
+      "bytes": 71311
+    },
+    {
+      "name": "https://localhost:3443/_next/static/chunks/0a_khl0kmq4fu.js",
+      "type": "script",
+      "bytes": 4404
+    },
+    {
+      "name": "https://localhost:3443/_next/static/chunks/1fpxxw4346w1w.js",
+      "type": "script",
+      "bytes": 14127
+    },
+    {
+      "name": "https://localhost:3443/api/operator",
+      "type": "fetch",
+      "bytes": 11527
+    }
+  ],
+  "inputValue": "",
+  "mobile": {
+    "playbookCards": 8,
+    "categoryButtons": [
+      "All\n8",
+      "Work\n6",
+      "Personal\n2"
+    ],
+    "hasHorizontalOverflow": false,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "scrollHeight": 2384
+  },
+  "screenshotPaths": [
+    "C:/Users/BkashJee/HermesWorkspace/Token-Pulse/mobile/operator-workbench-proof.png",
+    "C:/Users/BkashJee/HermesWorkspace/Token-Pulse/mobile/operator-workbench-proof-mobile.png"
+  ],
+  "browserEvents": []
+}

@@ -1,0 +1,13 @@
+{
+  "name": "X Growth Command Center",
+  "short_name": "X Growth",
+  "start_url": "/growth",
+  "scope": "/growth",
+  "display": "standalone",
+  "background_color": "#070914",
+  "theme_color": "#0b0e1d",
+  "description": "Private mobile growth dashboard for @BkashJosi",
+  "icons": [
+    { "src": "/x-growth-icon.png", "sizes": "1024x1024", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

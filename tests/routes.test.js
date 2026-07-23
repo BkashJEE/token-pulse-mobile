@@ -4,7 +4,8 @@ import { handlePost } from '../app/api/ingest/route.js';
 import { handleGet } from '../app/api/snapshot/route.js';
 import { handlePost as handleLogin } from '../app/api/session/route.js';
 import { handlePost as handleLogout } from '../app/api/session/logout/route.js';
-import { SESSION_COOKIE } from '../lib/session.js';
+import { isLocalDashboardRequest, SESSION_COOKIE } from '../lib/session.js';
+import { createLoginRateLimiter } from '../lib/login-rate-limit.js';
 
 const snapshot = { schema: 1, fetchedAt: 1, period: 'Today', dateKey: '2026-07-17', total: 10, input: 8, output: 2, cacheRead: 0, cacheHitRate: 0, activeSessions: 0, sessions: 1, platforms: [] };
 const post = (body, token = 'sync') => new Request('https://example.test/api/ingest', { method: 'POST', headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' }, body: typeof body === 'string' ? body : JSON.stringify(body) });
@@ -52,6 +53,25 @@ test('login exchanges the dashboard key for a protected cookie without echoing t
   assert.equal(response.headers.get('cache-control'), 'no-store');
 });
 
+test('login throttles repeated client failures with Retry-After and a secret-free audit event', async () => {
+  const limiter = createLoginRateLimiter({ windowMs: 60_000, perClientLimit: 2, globalLimit: 10 });
+  const request = key => new Request('https://example.test/api/session', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-real-ip': '192.0.2.8' },
+    body: JSON.stringify({ accessKey: key }),
+  });
+  const events = [];
+  const options = { limiter, now: () => 1000, audit: message => events.push(JSON.parse(message)) };
+  assert.equal((await handleLogin(request('wrong-1'), options)).status, 401);
+  assert.equal((await handleLogin(request('wrong-2'), options)).status, 401);
+  const blocked = await handleLogin(request('dashboard'), options);
+  assert.equal(blocked.status, 429);
+  assert.equal(blocked.headers.get('retry-after'), '60');
+  assert.deepEqual(events, [{ event: 'dashboard_auth_throttled', scope: 'client', retryAfter: 60 }]);
+  assert.equal(JSON.stringify(events).includes('wrong-1'), false);
+  assert.equal(JSON.stringify(events).includes('wrong-2'), false);
+});
+
 test('snapshot requires a device session while retaining the native bearer compatibility path', async () => {
   const wrongBearer = new Request('https://example.test/api/snapshot', { headers: { authorization: 'Bearer wrong' } });
   assert.equal((await handleGet(wrongBearer, { read: async () => snapshot })).status, 401);
@@ -68,6 +88,19 @@ test('snapshot requires a device session while retaining the native bearer compa
   assert.equal(response.headers.get('cache-control'), 'private, no-store');
   assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
   assert.deepEqual(await response.json(), snapshot);
+});
+
+test('localhost development requests need no key while production and remote requests stay private', async () => {
+  const local = new Request('http://127.0.0.1:3017/api/snapshot');
+  const remote = new Request('https://example.test/api/snapshot');
+  assert.equal(isLocalDashboardRequest(local, { environment: 'development' }), true);
+  assert.equal(isLocalDashboardRequest(local, { environment: 'production' }), false);
+  assert.equal(isLocalDashboardRequest(local, { environment: 'production', localNoAuth: '1' }), true);
+  assert.equal(isLocalDashboardRequest(remote, { environment: 'development' }), false);
+
+  const response = await handleGet(local, { read: async () => snapshot, localAccess: () => true });
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { ...snapshot, accessMode: 'local' });
 });
 
 test('logout expires the protected session cookie', async () => {

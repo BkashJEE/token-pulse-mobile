@@ -2,6 +2,9 @@ node_modules/
 .next/
 coverage/
 .vercel/
+.expo/
+native/dist/
+native/.expo/
 .env*
 !.env.example
 .npmrc
@@ -9,3 +12,9 @@ coverage/
 *.key
 *.p12
 *.pfx
+*.mobileprovision
+google-credentials*.json
+oauth-credentials*.json
+x-analytics*.csv
+account_overview_analytics.csv
+account_analytics_content*.csv

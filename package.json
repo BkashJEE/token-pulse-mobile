@@ -10,12 +10,20 @@
     "check": "next build",
     "test": "node --test tests/*.test.js",
     "test:coverage": "node --test --experimental-test-coverage tests/*.test.js"
+    ,"audit:secrets": "node scripts/secret-scan.cjs"
+    ,"guard:push": "npm run audit:secrets && npm test && npm run build"
   },
   "dependencies": {
     "@vercel/blob": "^2.0.0",
-    "next": "^16.0.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "next": "^16.2.11",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
   },
-  "overrides": { "postcss": "8.5.10" }
+  "overrides": {
+    "postcss": "8.5.12",
+    "sharp": "0.35.3"
+  },
+  "devDependencies": {
+    "react-test-renderer": "19.2.7"
+  }
 }

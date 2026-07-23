@@ -85,7 +85,7 @@ export default function Dashboard() {
       <section className="system-grid"><article><small>CPU LOAD</small><strong>{hardware.cpu?.utilization || 0}%</strong></article><article><small>MEMORY</small><strong>{hardware.memory?.utilization || 0}%</strong></article><article><small>GPU VRAM</small><strong>{hardware.gpu?.vramGb || 0} GB</strong></article></section>
       <section className="model-fit"><small>BEST LOCAL FIT</small><strong>{hardware.recommendation?.model || 'Waiting for scan'}</strong><span>System pressure: {hardware.pressure || 'unknown'}</span></section>
       <section className="quota-list"><div className="section-title"><b>Provider quotas</b><span>Account allowance</span></div>{data.platforms.map(platform => <article key={platform.id}><div><i className={platform.id}></i><b>{platform.label}</b></div><strong>{platform.quota?.available ? `${Math.round(platform.quota.remainingPercent)}% left` : 'Not exposed'}</strong></article>)}</section>
-      <footer><button onClick={() => load()}>Refresh now</button><button className="ghost" onClick={lock}>Lock</button></footer>
+      <footer><button onClick={() => load()}>Refresh now</button>{data.accessMode !== 'local' && <button className="ghost" onClick={lock}>Lock</button>}</footer>
     </div>}
     <nav className="tabbar" aria-label="Dashboard sections">
       <button className={tab === 'overview' ? 'selected' : ''} onClick={() => setTab('overview')}><TabIcon name="overview"/><span>Overview</span></button>

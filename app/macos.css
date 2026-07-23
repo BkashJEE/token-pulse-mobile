@@ -1,0 +1,281 @@
+/* Shared macOS-inspired visual system for the Token Pulse suite. */
+:root {
+  --mac-wallpaper: #0b0c10;
+  --mac-material: rgba(34, 36, 42, 0.78);
+  --mac-material-solid: #22242a;
+  --mac-elevated: rgba(48, 50, 58, 0.72);
+  --mac-border: rgba(255, 255, 255, 0.11);
+  --mac-border-strong: rgba(255, 255, 255, 0.17);
+  --mac-text: #f5f5f7;
+  --mac-secondary: #a1a1aa;
+  --mac-tertiary: #71717a;
+  --mac-blue: #0a84ff;
+  --mac-green: #30d158;
+  --mac-orange: #ff9f0a;
+  --mac-red: #ff453a;
+  --mac-radius-window: 24px;
+  --mac-radius-card: 16px;
+  --mac-shadow-window: 0 28px 80px rgba(0, 0, 0, 0.52), 0 2px 10px rgba(0, 0, 0, 0.28);
+  --mac-shadow-card: 0 8px 24px rgba(0, 0, 0, 0.2);
+  color-scheme: dark;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+  background: var(--mac-wallpaper);
+  color: var(--mac-text);
+}
+
+body {
+  min-height: 100dvh;
+  background:
+    radial-gradient(ellipse 80% 55% at 8% -8%, rgba(10, 132, 255, 0.24), transparent 64%),
+    radial-gradient(ellipse 70% 50% at 100% 105%, rgba(94, 92, 230, 0.18), transparent 68%),
+    linear-gradient(150deg, #12151c 0%, #08090c 58%, #101117 100%);
+  background-attachment: fixed;
+}
+
+.shell,
+.login {
+  color: var(--mac-text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", sans-serif;
+}
+
+/* Private access window */
+.login {
+  position: relative;
+  width: min(calc(100% - 28px), 430px);
+  min-height: 0;
+  margin: max(28px, calc((100dvh - 540px) / 2)) auto 28px;
+  padding: 76px 34px 38px;
+  overflow: hidden;
+  border: 1px solid var(--mac-border);
+  border-radius: var(--mac-radius-window);
+  background: linear-gradient(145deg, rgba(47, 49, 57, 0.88), rgba(25, 27, 32, 0.9));
+  box-shadow: var(--mac-shadow-window);
+  backdrop-filter: blur(32px) saturate(145%);
+  -webkit-backdrop-filter: blur(32px) saturate(145%);
+}
+
+.login::before {
+  position: absolute;
+  top: 20px;
+  left: 22px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: 20px 0 #febc2e, 40px 0 #28c840;
+  content: "";
+}
+
+.login::after {
+  position: absolute;
+  top: 53px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.07);
+  content: "";
+}
+
+.login .mark {
+  width: 62px;
+  height: 62px;
+  border: 1px solid rgba(10, 132, 255, 0.26);
+  border-radius: 15px;
+  color: white;
+  background: linear-gradient(145deg, #147ce5, #0060c9);
+  box-shadow: inset 0 1px rgba(255,255,255,.25), 0 10px 28px rgba(10,132,255,.24);
+  font-size: 29px;
+}
+
+.login h1 {
+  margin-top: 20px;
+  color: var(--mac-text);
+  font-size: 29px;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+}
+
+.login p { color: var(--mac-secondary); font-size: 13px; line-height: 1.55; }
+.login form { width: min(100%, 330px); }
+
+.login input {
+  height: 48px;
+  border: 1px solid var(--mac-border-strong);
+  border-radius: 10px;
+  color: var(--mac-text);
+  background: rgba(8, 9, 12, 0.48);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.2);
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+
+.login input:focus {
+  border-color: var(--mac-blue);
+  background: rgba(8, 9, 12, 0.66);
+  box-shadow: 0 0 0 3px rgba(10,132,255,.2), inset 0 1px 2px rgba(0,0,0,.2);
+}
+
+.login button,
+.shell button {
+  border-radius: 10px;
+  transition: transform .16s ease, filter .16s ease, background .16s ease;
+}
+
+.login button {
+  color: white;
+  background: linear-gradient(#1687f8, #0877df);
+  box-shadow: inset 0 1px rgba(255,255,255,.24), 0 5px 16px rgba(10,132,255,.2);
+}
+
+.login button:hover,
+.shell button:hover { filter: brightness(1.08); }
+.login button:active,
+.shell button:active { transform: scale(.985); }
+.login .ghost { border: 1px solid var(--mac-border); color: var(--mac-text); background: rgba(255,255,255,.055); box-shadow: none; }
+
+/* Main telemetry window */
+.shell {
+  position: relative;
+  width: min(calc(100% - 28px), 560px);
+  min-height: calc(100dvh - 32px);
+  margin: 16px auto;
+  padding: 0 22px calc(92px + env(safe-area-inset-bottom, 0px));
+  overflow: hidden;
+  border: 1px solid var(--mac-border);
+  border-radius: var(--mac-radius-window);
+  background: linear-gradient(155deg, rgba(39, 41, 48, .88), rgba(20, 22, 27, .9));
+  box-shadow: var(--mac-shadow-window);
+  backdrop-filter: blur(30px) saturate(135%);
+  -webkit-backdrop-filter: blur(30px) saturate(135%);
+}
+
+.shell > header {
+  position: relative;
+  height: 62px;
+  margin: 0 -22px;
+  padding: 0 22px 0 94px;
+  border-bottom: 1px solid rgba(255,255,255,.075);
+  background: rgba(255,255,255,.018);
+}
+
+.shell > header::before {
+  position: absolute;
+  left: 24px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow: 19px 0 #febc2e, 38px 0 #28c840;
+  content: "";
+}
+
+.shell > header b { font-size: 14px; font-weight: 650; letter-spacing: -.015em; }
+.shell > header > span {
+  border: 1px solid rgba(48,209,88,.18);
+  border-radius: 999px;
+  color: #7ee787;
+  background: rgba(48,209,88,.09);
+  letter-spacing: .1em;
+}
+
+.pulse { background: var(--mac-green); box-shadow: 0 0 0 3px rgba(48,209,88,.12); }
+.pulse.stale { background: var(--mac-orange); box-shadow: 0 0 0 3px rgba(255,159,10,.13); }
+.hero { padding-block: 31px 26px; }
+.hero small,
+.split small,
+.quick-insights small,
+.system-hero small,
+.system-grid small,
+.model-fit small,
+.section-title small { color: var(--mac-tertiary); letter-spacing: .11em; }
+.hero > strong { color: white; letter-spacing: -.065em; }
+.hero p { color: var(--mac-secondary); }
+
+.split,
+.system-grid { gap: 8px; }
+
+.split article,
+.platforms article,
+.quick-insights article,
+.quick-insights button,
+.sessions article,
+.system-grid article,
+.model-fit,
+.quota-list,
+.system-hero {
+  border-color: var(--mac-border) !important;
+  background: linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.035)) !important;
+  box-shadow: var(--mac-shadow-card);
+}
+
+.split article,
+.quick-insights article,
+.system-grid article { border-radius: 14px; }
+.platforms article,
+.sessions article,
+.model-fit,
+.quota-list,
+.system-hero { border-radius: var(--mac-radius-card); }
+.platforms article span,
+.platforms article em,
+.sessions article span,
+.model-fit span,
+.quota-list span,
+.system-hero p,
+.empty { color: var(--mac-secondary) !important; }
+
+.quick-insights button { color: var(--mac-text); }
+.quick-insights button em { color: #64d2ff; }
+.shell footer button { color: white; background: var(--mac-blue); }
+.shell footer .ghost { border: 1px solid var(--mac-border); color: var(--mac-text); background: rgba(255,255,255,.055); }
+
+.alert-stack article {
+  border-color: rgba(255,159,10,.26);
+  background: rgba(255,159,10,.09);
+  box-shadow: var(--mac-shadow-card);
+}
+.alert-stack article.critical { border-color: rgba(255,69,58,.3); background: rgba(255,69,58,.1); }
+.alert-stack article > span { color: white; background: var(--mac-orange); }
+.alert-stack article.critical > span { background: var(--mac-red); }
+.alert-stack p { color: var(--mac-secondary); }
+
+.tabbar {
+  right: max(12px, calc((100% - 536px) / 2));
+  bottom: calc(25px + env(safe-area-inset-bottom, 0px));
+  left: max(12px, calc((100% - 536px) / 2));
+  padding: 7px;
+  border: 1px solid var(--mac-border-strong);
+  border-radius: 18px;
+  background: rgba(36, 38, 45, .82);
+  box-shadow: 0 14px 36px rgba(0,0,0,.38), inset 0 1px rgba(255,255,255,.05);
+  backdrop-filter: blur(28px) saturate(150%);
+  -webkit-backdrop-filter: blur(28px) saturate(150%);
+}
+
+.tabbar button { border-radius: 12px; color: var(--mac-secondary); background: transparent; }
+.tabbar button.selected { color: white; background: rgba(255,255,255,.11); box-shadow: inset 0 1px rgba(255,255,255,.06), 0 3px 8px rgba(0,0,0,.2); }
+.tabbar button.selected svg { color: #64d2ff; }
+.tabbar button em { color: white; background: var(--mac-blue); }
+
+@media (max-width: 520px) {
+  body { background: #14161b; }
+  .shell {
+    width: 100%;
+    min-height: 100dvh;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .shell > header { padding-left: 22px; }
+  .shell > header::before { display: none; }
+  .tabbar { right: 12px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); left: 12px; }
+}
+
+@media (max-width: 380px) {
+  .login { width: calc(100% - 20px); padding-inline: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login button,
+  .shell button { transition: none; }
+}
